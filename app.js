@@ -73,7 +73,7 @@ const Main = {
     },
   },
   created() {
-    this.search(this.q)
+    //this.search(this.q)
   },
   template: `
     <div>
