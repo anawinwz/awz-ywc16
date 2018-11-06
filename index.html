@@ -92,7 +92,7 @@
         <div class="row align-items-center" style="height:10vh;background:#313131;">
             <div class="col">
                 <input type="search" class="form-control" id="songQuery" placeholder="ชื่อเพลง/ศิลปิน Spotify" onchange="app.search(this.value)">
-                
+
             </div>
         </div>
         <div class="row align-items-center" id="mainRow">
@@ -103,27 +103,21 @@
                         <h1 class="text-muted" v-show="Object.keys(tracks).length==0">ไม่พบผลลัพธ์สำหรับคำค้นหาดังกล่าว</h1>
                         <a v-for="(track,id) in tracks">
                             <div class="media song-item">
-                                <img class="align-self-center mr-3" v-if="track.album.images.length > 0" v-bind:src="track.album.images[0].url" width="15%"
-                                    style="min-width:64px;max-height:84px;">
+                                <img class="align-self-center mr-3" v-if="track.album.images.length > 0" v-bind:src="track.album.images[0].url"
+                                    width="15%" style="min-width:64px;max-height:84px;">
 
                                 <div class="align-self-center media-body">
                                     <h5 class="m-0">{{track.name}} <span class="badge badge-dark" v-if="track.explicit">Explicit</span></h5>
                                     <span>{{getArtist(track.artists)}} </span>
                                     <br>
-                                    <small><span v-if="track.features.tempo">{{parseInt(track.features.tempo)}} BPM | </span>Popularity:
+                                    <small><span v-if="track.features.tempo">{{parseInt(track.features.tempo)}} BPM |
+                                        </span>Popularity:
                                         {{track.popularity}}/100</small>
                                     <span class="badge badge-success" v-if="track.features.valence >= 0.6">Positive</span>
                                     <span class="badge badge-primary" v-if="track.features.danceability >= 0.65">Danceable</span>
                                     <span class="badge badge-info" v-if="track.features.acousticness > 0.5">Acoustic</span>
                                     <span class="badge badge-secondary" v-if="track.features.instrumentalness > 0.5">Instrumental</span>
 
-                                    <!--
-                            <table class="table table-condensed">
-                                <tr v-for="(val,name) in track.features">
-                                    <td>{{name}}</td><td>{{val}}</td>
-                                </tr>
-                            </table>
-                            -->
                                 </div>
                             </div>
                         </a>
@@ -148,6 +142,7 @@
         crossorigin="anonymous"></script>
     <script type="text/javascript" src="js/bootstrap.min.js"></script>
     <script type="text/javascript" src="js/vue.js"></script>
+    <script type="text/javascript" src="js/spotify.js"></script>
     <script type="text/javascript" src="app.js?v=1"></script>
 </body>
 
