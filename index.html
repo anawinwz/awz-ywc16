@@ -89,13 +89,7 @@
 
 <body>
     <div class="container-fluid" id="app">
-        <div class="row align-items-center" style="height:10vh;background:#313131;">
-            <div class="col">
-                <input type="search" class="form-control" id="songQuery" placeholder="ชื่อเพลง/ศิลปิน Spotify" onchange="app.search(this.value)">
-
-            </div>
-        </div>
-        
+                
         <router-view></router-view>
         
         <small id="spotifyCredit" class="text-serif d-none d-md-block">ข้อมูลจาก <a href="https://www.spotify.com"><img
@@ -111,7 +105,7 @@
     <script type="text/javascript" src="js/vue.js"></script>
     <script type="text/javascript" src="js/vue-router.js"></script>
     <script type="text/javascript" src="js/spotify.js"></script>
-    <script type="text/javascript" src="app.js?v=1"></script>
+    <script type="text/javascript" src="app.js?v=2"></script>
 </body>
 
 </html>

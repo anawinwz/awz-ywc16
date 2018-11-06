@@ -1,17 +1,19 @@
 const Main = {
   beforeRouteEnter(to, from, next) {
-    //next();
-
-    if (to.params.q) {
-      next(vm => {
-        console.log('Set query to ' + to.params.q)
-        vm.q = to.params.q
-        vm.search(vm.q)
-      })
-    } else {
-      next()
-    }
+    if (to.path == '/search/' || to.path == '/search') router.replace('/')
+    next(vm => {
+      vm.q = to.params.q ? to.params.q : ''
+      vm.search(vm.q)
+    })
   },
+  watch: {
+    $route(to, from) {
+      this.q = to.params.q ? to.params.q : ''
+      this.search(this.q)
+      next()
+    },
+  },
+
   data: function() {
     return {
       loading: 1,
@@ -71,49 +73,53 @@ const Main = {
     },
   },
   created() {
-    console.log(this.q)
     this.search(this.q)
   },
   template: `
-    <div class="row align-items-center" id="mainRow">
-    <div class="col-12 col-md-5 col-lg-4" id="leftPane">
-        <center style="display:none" v-show="loading == 1">Loading...</center>
-        <div class="card" v-show="loading == 0">
-            <div class="card-body">
-                <h1 class="text-muted" v-show="Object.keys(tracks).length==0">ไม่พบผลลัพธ์สำหรับคำค้นหาดังกล่าว</h1>
-                <a v-for="(track,id) in tracks">
-                    <div class="media song-item">
-                        <img class="align-self-center mr-3" v-if="track.album.images.length > 0" v-bind:src="track.album.images[0].url"
-                            width="15%" style="min-width:64px;max-height:84px;">
-
-                        <div class="align-self-center media-body">
-                            <h5 class="m-0">{{track.name}} <span class="badge badge-dark" v-if="track.explicit">Explicit</span></h5>
-                            <span>{{getArtist(track.artists)}} </span>
-                            <br>
-                            <small><span v-if="track.features.tempo">{{parseInt(track.features.tempo)}} BPM |
-                                </span>Popularity:
-                                {{track.popularity}}/100</small>
-                            <span class="badge badge-success" v-if="track.features.valence >= 0.6">Positive</span>
-                            <span class="badge badge-primary" v-if="track.features.danceability >= 0.65">Danceable</span>
-                            <span class="badge badge-info" v-if="track.features.acousticness > 0.5">Acoustic</span>
-                            <span class="badge badge-secondary" v-if="track.features.instrumentalness > 0.5">Instrumental</span>
-
-                        </div>
-                    </div>
-                </a>
-            </div>
+    <div>
+    <div class="row align-items-center" style="height:10vh;background:#313131;">
+        <div class="col">
+            <input type="search" v-bind:value="q" class="form-control" id="songQuery" placeholder="ชื่อเพลง/ศิลปิน Spotify" onchange="router.push('/search/'+this.value)">
         </div>
     </div>
-    <div class="col-12 col-md-7 col-lg-8">
-        <div v-if="!trackId">
-            โปรดเลือกเพลงที่ต้องการดูรายละเอียดเชิงลึก
-        </div>
+    <div class="row align-items-center" id="mainRow">
+        <div class="col-12" id="leftPane">
+            <center style="display:none" v-show="loading == 1">Loading...</center>
+            <div class="card" v-show="loading == 0">
+                <div class="card-body">
+                    <h1 class="text-muted" v-show="Object.keys(tracks).length==0">ไม่พบผลลัพธ์สำหรับคำค้นหาดังกล่าว</h1>
+                    <a v-for="(track,id) in tracks">
+                        <div class="media song-item">
+                            <img class="align-self-center mr-3" v-if="track.album.images.length > 0" v-bind:src="track.album.images[0].url"
+                                width="64">
 
+                            <div class="align-self-center media-body">
+                                <h5 class="m-0">{{track.name}} <span class="badge badge-dark" v-if="track.explicit">Explicit</span></h5>
+                                <span>{{getArtist(track.artists)}} </span>
+                                <br>
+                                <small><span v-if="track.features.tempo">{{parseInt(track.features.tempo)}} BPM |
+                                    </span>Popularity:
+                                    {{track.popularity}}/100</small>
+                                <span class="badge badge-success" v-if="track.features.valence >= 0.6">Positive</span>
+                                <span class="badge badge-primary" v-if="track.features.danceability >= 0.65">Danceable</span>
+                                <span class="badge badge-info" v-if="track.features.acousticness > 0.5">Acoustic</span>
+                                <span class="badge badge-secondary" v-if="track.features.instrumentalness > 0.5">Instrumental</span>
+
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
     </div>
     </div>
     `,
 }
-const routes = [{ path: '/search/:q', component: Main, alias: '/' }]
+const routes = [
+  { path: '/', component: Main },
+  { path: '/search/:q', component: Main },
+  { path: '*', redirect: '/' },
+]
 
 const router = new VueRouter({
   routes,
