@@ -20,12 +20,6 @@ var spotify = {
           }
         }
       },
-      beforeSend: function(xhr) {
-        xhr.setRequestHeader(
-          'Authorization',
-          'Basic ' + btoa(this.clientId + ':' + this.clientSecret),
-        )
-      },
     })
   },
 
