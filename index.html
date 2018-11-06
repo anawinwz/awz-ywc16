@@ -30,11 +30,11 @@
             <div class="card-panel grey lighten-5 z-depth-1" v-for="track in tracks">
                 <div class="row valign-wrapper">
                     <div class="col s2">
-                        <img v-bind:src="track.album.images[0].url" class="responsive-img">
+                        <img v-bind:src="track.album.images[0].url" class="responsive-img" width="100">
                     </div>
                     <div class="col s10">
-                        <h5>{{track.name}}</h5>
-                        <span class="grey-text">test</span>
+                        <h6>{{track.name}}</h6>
+                        <span class="grey-text" v-for="artist in track.artists">{{artist.name}}</span>
                     </div>
                 </div>
             </div>
