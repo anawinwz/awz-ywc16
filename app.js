@@ -52,20 +52,34 @@ var spotify = {
 var app = new Vue({
     el: '#app',
     data: {
-        tracks: [
-        ]
-    },
+        loading: 1,
+        tracks: {}
+    }, 
     methods: {
-        setTracks: function(tracks){
-            this.tracks = tracks;
+        getArtist: function(artists){
+            let a = [];
+            artists.forEach((artist)=>{
+                a.push(artist.name);
+            })
+            return a.join(", ");
         }
     }
     
 });
+
 spotify.getToken(()=>{
-    console.log("getToken Callback");
-    spotify.get('/v1/tracks/?ids=11dFghVXANMlKmJXsNCbNl,20I6sIOMTCkB6w7ryavxtO,7xGfFoTpQ2E7fRF5lN10tr',{},(resp)=>{
-        app.setTracks(resp.tracks);
+    app.loading = 1;
+    spotify.get('/v1/playlists/37i9dQZEVXbMnz8KIWsvf9/tracks',{fields:'items(track(id,name,artists(name),popularity,explicit,href,album(name,href,images)))'},(resp)=>{
+        app.loading = 0;
+        resp.items.forEach((item)=>{
+            app.$set(app.tracks, item.track.id, item.track);
+        });
+        spotify.get('/v1/audio-features',{ids:Object.keys(app.tracks).join(",")},(resp)=>{
+            //console.log(resp);
+            resp.audio_features.forEach((item)=>{
+                app.$set(app.tracks[item.id], 'features', item);
+            });
+        })
     });
 });
 

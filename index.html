@@ -37,13 +37,26 @@
         </div>
     </nav>
     <div class="container" id="app">
-
-        <div class="media" v-for="track in tracks">
-            <img class="mr-3" v-bind:src="track.album.images[0].url" width="100">
+        <span v-if="loading == 1">Loading...</span>
+        <div class="media" v-for="(track,id) in tracks">
+            <img class="align-self-center  mr-3" v-bind:src="track.album.images[0].url" width="120">
 
             <div class="align-self-center media-body">
-                <h5 class="mt-0">{{track.name}}</h5>
-                <span v-for="artist in track.artists">{{artist.name}}</span>
+                <h5 class="mt-0">{{track.name}} <span class="badge badge-danger" v-if="track.explicit">Explicit</span></h5>
+                <span>{{getArtist(track.artists)}} </span>
+                <br>
+                <small>{{parseInt(track.features.tempo)}} BPM | Popularity: {{track.popularity}}/100</small>
+                <span class="badge badge-success" v-if="track.features.valence > 0.6">Positive</span>
+                <span class="badge badge-info" v-if="track.features.acousticness > 0.5">Acoustic</span>
+                <span class="badge badge-secondary" v-if="track.features.instrumentalness > 0.5">Instrumental</span>
+                
+                <!--
+                <table class="table table-condensed">
+                    <tr v-for="(val,name) in track.features">
+                        <td>{{name}}</td><td>{{val}}</td>
+                    </tr>
+                </table>
+                -->
             </div>
         </div>
 
