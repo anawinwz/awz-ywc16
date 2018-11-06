@@ -8,58 +8,137 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
     <link type="text/css" rel="stylesheet" href="css/bootstrap.min.css" media="screen,projection" />
+    <style>
+        @font-face {
+            font-family: 'Noto Sans Thai';
+            font-style: normal;
+            font-weight: 400;
+            src: url("https://fonts-cdn.pakin.me/fonts/NotoSansThai/NotoSansThaiUI-Regular.woff2") format("woff2"), url("https://fonts-cdn.pakin.me/fonts/NotoSansThai/NotoSansThaiUI-Regular.woff") format("woff");
+        }
+
+        @font-face {
+            font-family: 'Noto Sans Thai';
+            font-style: normal;
+            font-weight: 700;
+            src: url("https://fonts-cdn.pakin.me/fonts/NotoSansThai/NotoSansThaiUI-Bold.woff2") format("woff2"), url("https://fonts-cdn.pakin.me/fonts/NotoSansThai/NotoSansThaiUI-Bold.woff") format("woff");
+        }
+
+        body{
+            background: linear-gradient(to right bottom, #4CAF50, rgb(65, 160, 69) 85%);
+            background-repeat: no-repeat;
+            height:100%;
+            color:white;
+        }
+        .text-serif{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji";}
+        *{font-family:'Noto Sans Thai',-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji";}
+        
+        #songQuery{
+            font-size:18px;
+            background:none;
+            background-image: url(img/search.png);
+            background-size: 28px;
+            background-repeat: no-repeat;
+            background-position: top left;
+            padding-left: 40px;
+            color: white;
+            border: none;
+            border-radius: 0;
+            border-bottom: 1px solid rgba(255,255,255,0.45);
+        }
+        #songQuery:active,#songQuery:focus{
+            box-shadow:none;
+        }
+        #songQuery:focus{
+            border-bottom-color:white;
+        }
+        #songQuery::placeholder{
+            color:rgba(255,255,255,0.45);
+        }
+        
+        #mainRow{
+            height:90vh;
+        }
+        #leftPane .card{
+            color:black;
+            box-shadow: -1px 0px 7px rgba(0, 0, 0, 0.3);
+            margin-top:10px;
+            margin-bottom:10px;
+        }
+        #leftPane .card-body{
+            overflow: hidden;
+            overflow-y: auto;
+            height: 70vh;
+        }
+        .song-item{
+            padding:5px;
+        }
+        .song-item:hover{
+            background:rgba(0,0,0,0.1);
+            cursor:default;
+        }
+        
+        #spotifyCredit{
+            position: fixed;
+            z-index: 1000;
+            bottom: 2%;
+            right: 2%;
+        }
+        
+    </style>
 </head>
 
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarTogglerDemo03"
-            aria-controls="navbarTogglerDemo03" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <a class="navbar-brand" href="#">Navbar</a>
-
-        <div class="collapse navbar-collapse" id="navbarTogglerDemo03">
-            <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
-                <li class="nav-item active">
-                    <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">Link</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link disabled" href="#">Disabled</a>
-                </li>
-            </ul>
-            <form class="form-inline my-2 my-lg-0">
-                <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
-                <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
-            </form>
-        </div>
-    </nav>
-    <div class="container" id="app">
-        <span v-if="loading == 1">Loading...</span>
-        <div class="media" v-for="(track,id) in tracks">
-            <img class="align-self-center  mr-3" v-bind:src="track.album.images[0].url" width="120">
-
-            <div class="align-self-center media-body">
-                <h5 class="mt-0">{{track.name}} <span class="badge badge-danger" v-if="track.explicit">Explicit</span></h5>
-                <span>{{getArtist(track.artists)}} </span>
-                <br>
-                <small>{{parseInt(track.features.tempo)}} BPM | Popularity: {{track.popularity}}/100</small>
-                <span class="badge badge-success" v-if="track.features.valence > 0.6">Positive</span>
-                <span class="badge badge-info" v-if="track.features.acousticness > 0.5">Acoustic</span>
-                <span class="badge badge-secondary" v-if="track.features.instrumentalness > 0.5">Instrumental</span>
+    <div class="container-fluid" id="app">
+        <div class="row align-items-center" style="height:10vh;background:#313131;">
+            <div class="col">
+                <input type="search" class="form-control" id="songQuery" placeholder="ชื่อเพลง/ศิลปิน Spotify" onchange="app.search(this.value)">
                 
-                <!--
-                <table class="table table-condensed">
-                    <tr v-for="(val,name) in track.features">
-                        <td>{{name}}</td><td>{{val}}</td>
-                    </tr>
-                </table>
-                -->
             </div>
         </div>
+        <div class="row align-items-center" id="mainRow">
+            <div class="col-12 col-md-5 col-lg-4" id="leftPane">
+                <center style="display:none" v-show="loading == 1">Loading...</center>
+                <div class="card" v-show="loading == 0">
+                    <div class="card-body">
+                        <h1 class="text-muted" v-show="Object.keys(tracks).length==0">ไม่พบผลลัพธ์สำหรับคำค้นหาดังกล่าว</h1>
+                        <a v-for="(track,id) in tracks">
+                            <div class="media song-item">
+                                <img class="align-self-center mr-3" v-if="track.album.images.length > 0" v-bind:src="track.album.images[0].url" width="15%"
+                                    style="min-width:64px;max-height:84px;">
 
+                                <div class="align-self-center media-body">
+                                    <h5 class="m-0">{{track.name}} <span class="badge badge-dark" v-if="track.explicit">Explicit</span></h5>
+                                    <span>{{getArtist(track.artists)}} </span>
+                                    <br>
+                                    <small><span v-if="track.features.tempo">{{parseInt(track.features.tempo)}} BPM | </span>Popularity:
+                                        {{track.popularity}}/100</small>
+                                    <span class="badge badge-success" v-if="track.features.valence >= 0.6">Positive</span>
+                                    <span class="badge badge-primary" v-if="track.features.danceability >= 0.65">Danceable</span>
+                                    <span class="badge badge-info" v-if="track.features.acousticness > 0.5">Acoustic</span>
+                                    <span class="badge badge-secondary" v-if="track.features.instrumentalness > 0.5">Instrumental</span>
+
+                                    <!--
+                            <table class="table table-condensed">
+                                <tr v-for="(val,name) in track.features">
+                                    <td>{{name}}</td><td>{{val}}</td>
+                                </tr>
+                            </table>
+                            -->
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-7 col-lg-8">
+                <div v-if="!trackId">
+                    โปรดเลือกเพลงที่ต้องการดูรายละเอียดเชิงลึก
+                </div>
+
+            </div>
+        </div>
+        <small id="spotifyCredit" class="text-serif d-none d-md-block">ข้อมูลจาก <a href="https://www.spotify.com"><img
+                    src="img/spotify.png" width="70"></a></small>
     </div>
     </div>
     </div>
