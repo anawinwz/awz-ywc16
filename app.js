@@ -1,15 +1,23 @@
 const Main = {
   beforeRouteEnter(to, from, next) {
-    if (to.path == '/search/' || to.path == '/search') router.replace('/')
     next(vm => {
       vm.q = to.params.q ? to.params.q : ''
-      vm.search(vm.q)
+      vm.trackId = to.params.id ? to.params.id : ''
+      if (vm.trackId == '') vm.search(vm.q)
+      else if (!tracks[vm.trackId]) {
+        //TODO: track get info
+      }
     })
   },
   watch: {
     $route(to, from) {
-      this.q = to.params.q ? to.params.q : ''
-      this.search(this.q)
+      this.trackId = to.params.id ? to.params.id : ''
+      if (this.trackId == '') {
+        if (!to.params.q || to.params.q != this.q) {
+          this.q = to.params.q ? to.params.q : ''
+          this.search(this.q)
+        }
+      }
       next()
     },
   },
@@ -72,57 +80,62 @@ const Main = {
       }
     },
   },
-  created() {
-    //this.search(this.q)
-  },
   template: `
     <div>
-    <div class="row align-items-center" style="height:10vh;background:#313131;">
-        <div class="col">
-            <input type="search" v-bind:value="q" class="form-control" id="songQuery" placeholder="ชื่อเพลง/ศิลปิน Spotify" onchange="router.push('/search/'+this.value)">
-        </div>
-    </div>
-    <div class="row align-items-center" id="mainRow">
-        <div class="col-12" id="leftPane">
-            <center style="display:none" v-show="loading == 1">Loading...</center>
-            <div class="card" v-show="loading == 0">
-                <div class="card-body">
-                    <h1 class="text-muted" v-show="Object.keys(tracks).length==0">ไม่พบผลลัพธ์สำหรับคำค้นหาดังกล่าว</h1>
-                    <a v-for="(track,id) in tracks">
-                        <div class="media song-item">
-                            <img class="align-self-center mr-3" v-if="track.album.images.length > 0" v-bind:src="track.album.images[0].url"
-                                width="64">
+      <div class="row align-items-center" id="headBar">
+          <div class="col"">
+              <input type="search" v-show="trackId==''" v-bind:value="q" class="form-control" id="songQuery" placeholder="ชื่อเพลง/ศิลปิน Spotify" onchange="router.push('/search/'+this.value)">
+              <template v-if="trackId!=''">
+                <a href="javascript:history.go(-1)" class="btn btn-lg btn-outline-light">ย้อนกลับ</a>
+                <h3 class="d-inline-block w-50 ml-2">{{tracks[trackId].name}} <small>{{getArtist(tracks[trackId].artists)}}</small></h3
+              </template>
+          </div>
+      </div>
+      <div class="row align-items-center" id="mainRow">
+          <div class="col" id="leftPane">
+              <center v-show="loading == 1">กำลังโหลด...</center>
+              <div class="card" v-show="loading == 0 && trackId==''">
+                  <div class="card-body">
+                      <h1 class="text-muted" v-show="Object.keys(tracks).length==0">ไม่พบผลลัพธ์สำหรับคำค้นหาดังกล่าว</h1>
+                      <router-link :to="'/track/'+id" v-for="(track,id) in tracks">
+                          <div class="media song-item">
+                              <img class="align-self-center mr-3" v-if="track.album.images.length > 0" v-bind:src="track.album.images[0].url"
+                                  width="64">
 
-                            <div class="align-self-center media-body">
-                                <h5 class="m-0">{{track.name}} <span class="badge badge-dark" v-if="track.explicit">Explicit</span></h5>
-                                <span>{{getArtist(track.artists)}} </span>
-                                <br>
-                                <small><span v-if="track.features.tempo">{{parseInt(track.features.tempo)}} BPM |
-                                    </span>Popularity:
-                                    {{track.popularity}}/100</small>
-                                <span class="badge badge-success" v-if="track.features.valence >= 0.6">Positive</span>
-                                <span class="badge badge-primary" v-if="track.features.danceability >= 0.65">Danceable</span>
-                                <span class="badge badge-info" v-if="track.features.acousticness > 0.5">Acoustic</span>
-                                <span class="badge badge-secondary" v-if="track.features.instrumentalness > 0.5">Instrumental</span>
+                              <div class="align-self-center media-body">
+                                  <h5 class="m-0">{{track.name}} <span class="badge badge-dark" v-if="track.explicit">Explicit</span></h5>
+                                  <span>{{getArtist(track.artists)}}</span>
+                                  <br>
+                                  <small><span v-if="track.features.tempo">{{parseInt(track.features.tempo)}} BPM |
+                                      </span>Popularity:
+                                      {{track.popularity}}/100</small>
+                                  <span class="badge badge-success" v-if="track.features.valence >= 0.6">Positive</span>
+                                  <span class="badge badge-primary" v-if="track.features.danceability >= 0.65">Danceable</span>
+                                  <span class="badge badge-info" v-if="track.features.acousticness > 0.5">Acoustic</span>
+                                  <span class="badge badge-secondary" v-if="track.features.instrumentalness > 0.5">Instrumental</span>
 
-                            </div>
-                        </div>
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
+                              </div>
+                          </div>
+                      </router-link>
+                  </div>
+              </div>
+          </div>
+      </div>
     </div>
     `,
 }
+
 const routes = [
   { path: '/', component: Main },
   { path: '/search/:q', component: Main },
+  { path: '/track/:id', component: Main },
   { path: '*', redirect: '/' },
 ]
 
 const router = new VueRouter({
-  routes,
+  routes: routes,
+  //base: '/awz-ywc16',
+  //  mode: 'history'
 })
 
 const app = new Vue({
