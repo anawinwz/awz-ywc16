@@ -14,7 +14,10 @@ var spotify = {
                 if (response && response.access_token && response.expires_in) {
                     spotify.token = response.access_token;
                     spotify.tokenExp = new Date().getTime() + response.expires_in;
-                    if(typeof $cb != "undefined") $cb();
+                    if(typeof $cb != "undefined") {
+                        console.log("Got token!");
+                        $cb();
+                    }
                 }
             },
             beforeSend: function (xhr) {
@@ -30,13 +33,14 @@ var spotify = {
             data: params,
             dataType: "json",
             success: function (response) {
-                if (typeof $cb != "undefined") $cb();
+                if (typeof $cb != "undefined") $cb(response);
             },
             beforeSend: function (xhr) {
                 xhr.setRequestHeader("Authorization", "Bearer " + spotify.token);
             }
         })};
         if(this.token.length==0 || new Date().getTime()>=this.tokenExp) this.getToken(ajaxFunc(method, endpoint, params, $cb));
+        else ajaxFunc(method, endpoint, params, $cb);
     },
     get: function (endpoint, params, $cb) {
         this.ajax("GET", endpoint, params, $cb);
@@ -50,12 +54,18 @@ var app = new Vue({
     data: {
         tracks: [
         ]
+    },
+    methods: {
+        setTracks: function(tracks){
+            this.tracks = tracks;
+        }
     }
     
 });
 spotify.getToken(()=>{
+    console.log("getToken Callback");
     spotify.get('/v1/tracks/?ids=11dFghVXANMlKmJXsNCbNl,20I6sIOMTCkB6w7ryavxtO,7xGfFoTpQ2E7fRF5lN10tr',{},(resp)=>{
-        this.data.tracks = resp;
+        app.setTracks(resp.tracks);
     });
 });
 
