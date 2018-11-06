@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "prettier": "^1.14.3"
   },
-  "scripts": {
-  },
+  "scripts": {},
   "husky": {
     "hooks": {
       "pre-commit": "lint-staged"
@@ -17,8 +17,7 @@
       "git add"
     ]
   },
-  "eslintConfig": {
-  },
+  "eslintConfig": {},
   "browserslist": [
     ">0.2%",
     "not dead",
