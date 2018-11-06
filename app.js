@@ -18,7 +18,6 @@ const Main = {
           this.search(this.q)
         }
       }
-      next()
     },
   },
 
@@ -83,23 +82,34 @@ const Main = {
   template: `
     <div>
       <div class="row align-items-center" id="headBar">
-          <div class="col"">
+          <div class="col">
               <input type="search" v-show="trackId==''" v-bind:value="q" class="form-control" id="songQuery" placeholder="ชื่อเพลง/ศิลปิน Spotify" onchange="router.push('/search/'+this.value)">
               <template v-if="trackId!=''">
                 <a href="javascript:history.go(-1)" class="btn btn-lg btn-outline-light">ย้อนกลับ</a>
-                <h3 class="d-inline-block w-50 ml-2">{{tracks[trackId].name}} <small>{{getArtist(tracks[trackId].artists)}}</small></h3
+                <h3 class="d-inline-block w-50 ml-2">ข้อมูลเชิงลึกของเพลง</h3>
               </template>
           </div>
       </div>
-      <div class="row align-items-center" id="mainRow">
+      <div class="row align-items-center" id="mainRow" v-bind:style="(trackId!='')?{backgroundColor:'rgba(0,0,0,0.5)'}:{}">
+          <template v-if="trackId!=''">
+            <div style="width: 115vw;
+            height: 115vh;
+            filter: blur(60px);
+            z-index: -1;
+            position: fixed;
+            top: 0;
+            left: -6%;" v-bind:style="(trackId!='')?{background:'url('+((tracks[trackId].album.images.length > 0)?tracks[trackId].album.images[0].url:'img/albumDefault.png')+')',backgroundSize:'cover',filter:'blur(5px)'}:{}">
+            </div>
+          </template>
           <div class="col" id="leftPane">
               <center v-show="loading == 1">กำลังโหลด...</center>
+
               <div class="card" v-show="loading == 0 && trackId==''">
                   <div class="card-body">
                       <h1 class="text-muted" v-show="Object.keys(tracks).length==0">ไม่พบผลลัพธ์สำหรับคำค้นหาดังกล่าว</h1>
                       <router-link :to="'/track/'+id" v-for="(track,id) in tracks">
                           <div class="media song-item">
-                              <img class="align-self-center mr-3" v-if="track.album.images.length > 0" v-bind:src="track.album.images[0].url"
+                              <img class="align-self-center mr-3" v-bind:src="(track.album.images.length > 0)?track.album.images[0].url:'img/albumDefault.png'"
                                   width="64">
 
                               <div class="align-self-center media-body">
@@ -119,6 +129,21 @@ const Main = {
                       </router-link>
                   </div>
               </div>
+
+              <template v-if="trackId!=''">
+                <div class="row">
+                  <div class="col-3">
+                    <img class="img-fluid" v-bind:src="(tracks[trackId].album.images.length > 0)?tracks[trackId].album.images[0].url:'img/albumDefault.png'">
+                  </div>
+                  <div class="col-6">
+                    <h3>{{tracks[trackId].name}}</h3>
+                    <p>{{getArtist(tracks[trackId].artists)}}</p>
+                    
+                    <span class="text-success">{{tracks[trackId].album.name}}</span>
+
+                  </div>
+                </div>
+              </template>
           </div>
       </div>
     </div>
