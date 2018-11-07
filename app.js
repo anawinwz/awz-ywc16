@@ -1,11 +1,63 @@
+const features = [
+  'acousticness',
+  'valence',
+  'danceability',
+  'energy',
+  'instrumentalness',
+  'liveness',
+  'speechiness',
+]
+const PolarGraph = {
+  data: function() {
+    return {}
+  },
+  template: `
+  <canvas v-bind:id="'chart_'+_uid"></canvas>
+  `,
+  props: ['data'],
+  mounted() {
+    console.log(this._uid)
+
+    new Chart($('#chart_' + this._uid), {
+      data: {
+        datasets: [
+          {
+            label: 'Features',
+            data: Object.values(this.data),
+            backgroundColor: [
+              'rgb(255, 99, 132)',
+              'rgb(75, 192, 192)',
+              'rgb(255, 205, 86)',
+              'rgb(201, 203, 207)',
+              'rgb(54, 162, 235)',
+            ],
+          },
+        ],
+        labels: Object.keys(this.data),
+      },
+      type: 'polarArea',
+      options: {
+        legend: {
+          position: 'right',
+        },
+        scale: {
+          display: false,
+        },
+      },
+    })
+  },
+}
 const Main = {
   beforeRouteEnter(to, from, next) {
     next(vm => {
       vm.q = to.params.q ? to.params.q : ''
-      vm.trackId = to.params.id ? to.params.id : ''
-      if (vm.trackId == '') vm.search(vm.q)
-      else if (!tracks[vm.trackId]) {
-        //TODO: track get info
+      if (!to.params.id || to.params.id == '') vm.search(vm.q)
+      else {
+        if (!vm.tracks[to.params.id] && vm.trackId != to.params.id) {
+          console.log('Try to fetch track!')
+          vm.trackId = to.params.id
+          vm.getTrack(vm.trackId)
+        }
       }
     })
   },
@@ -30,6 +82,15 @@ const Main = {
     }
   },
   methods: {
+    getTrack: function(trackId) {
+      this.loading = 1
+      spotify.get('/v1/tracks/' + trackId, {}, resp => {
+        this.tracks = {}
+        console.log(resp)
+        this.processTracks({ items: [resp] })
+        this.loading = 0
+      })
+    },
     getArtist: function(artists) {
       let a = []
       artists.forEach(artist => {
@@ -38,6 +99,8 @@ const Main = {
       return a.join(', ')
     },
     processTracks: function(tracks, isFeature) {
+      console.log(tracks)
+      console.log(tracks.items)
       tracks.items.forEach(item => {
         if (item.track) this.$set(this.tracks, item.track.id, item.track)
         else this.$set(this.tracks, item.id, item)
@@ -49,7 +112,18 @@ const Main = {
           resp => {
             resp.audio_features.forEach(item => {
               if (!this.tracks[item.id]) return false
-              this.$set(this.tracks[item.id], 'features', item)
+
+              this.$set(this.tracks[item.id], 'features', [])
+
+              for (idx in item) {
+                if (features.indexOf(idx) != -1) {
+                  this.$set(
+                    this.tracks[item.id]['features'],
+                    idx[0].toUpperCase() + idx.slice(1),
+                    item[idx],
+                  )
+                }
+              }
             })
           },
         )
@@ -78,6 +152,9 @@ const Main = {
         })
       }
     },
+  },
+  components: {
+    'polar-graph': PolarGraph,
   },
   template: `
     <div>
@@ -140,6 +217,7 @@ const Main = {
                     <p>{{getArtist(tracks[trackId].artists)}}</p>
                     
                     <span class="text-success">{{tracks[trackId].album.name}}</span>
+                    <polar-graph v-bind:data="tracks[trackId].features"></polar-graph>
 
                   </div>
                 </div>
