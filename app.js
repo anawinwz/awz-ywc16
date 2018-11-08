@@ -55,9 +55,16 @@ const Main = {
       vm.q = to.params.q ? to.params.q : ''
       if (!to.params.id || to.params.id == '') vm.search(vm.q)
       else if (vm.trackId != to.params.id) {
+        vm.trackId = to.params.id
         if (!vm.tracks[to.params.id]) {
-          vm.trackId = to.params.id
           vm.getTrack(vm.trackId)
+        } else {
+          if (!vm.tracks[to.params.id].album.genres) {
+            vm.loading = 1
+            vm.getAlbum(vm.tracks[to.params.id].album.id, to.params.id, () => {
+              vm.loading = 0
+            })
+          }
         }
       }
     })
@@ -66,9 +73,20 @@ const Main = {
     $route(to, from) {
       this.trackId = to.params.id ? to.params.id : ''
       if (this.trackId == '') {
-        if (!to.params.q || to.params.q != this.q) {
-          this.q = to.params.q ? to.params.q : ''
-          this.search(this.q)
+        if ((!to.params.q && this.q != '') || to.params.q != this.q) {
+          if (!to.params.q || !from.params.q || to.params.q != from.params.q)
+            this.search(to.params.q ? to.params.q : '')
+        }
+      } else {
+        if (!this.tracks[to.params.id].album.genres) {
+          this.loading = 1
+          this.getAlbum(
+            this.tracks[to.params.id].album.id,
+            to.params.id,
+            () => {
+              this.loading = 0
+            },
+          )
         }
       }
     },
@@ -77,18 +95,36 @@ const Main = {
   data: function() {
     return {
       loading: 1,
+      isInit: true,
       q: '',
       trackId: '',
       tracks: {},
     }
   },
   methods: {
-    getTrack: function(trackId) {
+    getTrack: function(trackId, $cb) {
       this.loading = 1
       spotify.get('/v1/tracks/' + trackId, {}, resp => {
         this.tracks = {}
-        this.processTracks({ items: [resp] })
+        this.processTracks({ items: [resp] }, () => {
+          this.getAlbum(resp.album.id, resp.id, () => {
+            this.loading = 0
+          })
+        })
         //this.loading = 0
+      })
+    },
+    getAlbum: function(albumId, trackId, $cb) {
+      this.loading = 1
+      spotify.get('/v1/albums/' + albumId, {}, resp => {
+        if (typeof trackId != 'undefined' && trackId.length > 0) {
+          for (idx in resp) {
+            if (!this.tracks[trackId].album[idx]) {
+              this.$set(this.tracks[trackId].album, idx, resp[idx])
+            }
+          }
+        }
+        if (typeof $cb == 'function') $cb()
       })
     },
     getArtist: function(artists) {
@@ -98,7 +134,7 @@ const Main = {
       })
       return a.join(', ')
     },
-    processTracks: function(tracks, isFeature) {
+    processTracks: function(tracks, $cb, isFeature) {
       tracks.items.forEach(item => {
         if (item.track) {
           this.$set(this.tracks, item.track.id, item.track)
@@ -110,6 +146,7 @@ const Main = {
             this.$set(this.tracks[item.id], 'album', item.albums[0])
         }
       })
+
       if (typeof isFeature == 'undefined' || isFeature) {
         spotify.get(
           '/v1/audio-features',
@@ -130,15 +167,20 @@ const Main = {
                   )
                 }
               }
-              this.loading = 0
+
+              if (typeof $cb == 'function') $cb()
+              else this.loading = 0
             })
           },
         )
       } else {
-        this.loading = 0
+        if (typeof $cb == 'function') $cb()
+        else this.loading = 0
       }
     },
     search: function(q) {
+      if (q == this.q && !this.isInit) return
+      this.isInit = false
       this.loading = 1
       this.tracks = {}
       if (!q || q.length == 0) {
@@ -147,17 +189,17 @@ const Main = {
           {
             limit: 10,
             fields:
-              'items(track(id,name,artists(name),popularity,explicit,href,album(name,href,images)))',
+              'items(track(id,name,artists(name),popularity,explicit,href,album(name,id,images)))',
           },
           resp => {
+            this.q = q
             this.processTracks(resp)
-            //this.loading = 0
           },
         )
       } else {
         spotify.get('/v1/search', { q: q, type: 'track', limit: 10 }, resp => {
+          this.q = q
           this.processTracks(resp.tracks)
-          //this.loading = 0
         })
       }
     },
@@ -172,7 +214,7 @@ const Main = {
               <input type="search" v-show="trackId==''" v-bind:value="q" class="form-control" id="songQuery" placeholder="ชื่อเพลง/ศิลปิน Spotify" onchange="router.push('/search/'+this.value)">
               <template v-if="trackId!=''">
                 <a href="javascript:history.go(-1)" class="btn btn-lg btn-outline-light">ย้อนกลับ</a>
-                <h3 class="d-inline-block w-50 ml-2">ข้อมูลเชิงลึกของเพลง</h3>
+                <h3 class="d-inline-block ml-2">ข้อมูลเชิงลึกของเพลง</h3>
               </template>
           </div>
       </div>
@@ -193,7 +235,7 @@ const Main = {
                                   <span>{{getArtist(track.artists)}}</span>
                                   <br>
                                   <small><span v-if="track.tempo">{{parseInt(track.tempo)}} BPM |
-                                      </span>Popularity:
+                                      </span>ความนิยม:
                                       {{track.popularity}}/100</small>
                                   <template v-if="track.features">
                                     <span class="badge badge-success" v-if="track.features.Valence >= 0.6">Positive</span>
@@ -207,25 +249,46 @@ const Main = {
                   </div>
               </div>
 
-              <template v-if="trackId!=''">
+              <template v-if="loading==0 && trackId!=''">
                 <div class="row justify-content-center mb-5">
-                  <div class="col-3 col-md-2">
-                    <img class="img-fluid" v-bind:src="(tracks[trackId].album.images.length > 0)?tracks[trackId].album.images[0].url:'img/albumDefault.png'">
+                  <div class="col-4 col-md-3 col-lg-2">
+                    <img class="img-fluid album-img-lg" v-bind:src="(tracks[trackId].album.images.length > 0)?tracks[trackId].album.images[0].url:'img/albumDefault.png'">
                   </div>
-                  <div class="col-3">
+                  <div class="col-8 col-md-5 col-lg-4">
                     <h3>{{tracks[trackId].name}}</h3>
-                    <p>{{getArtist(tracks[trackId].artists)}}</p>
+                    <p class="text-light">{{getArtist(tracks[trackId].artists)}}</p>
                     
-                    <span class="text-success">{{tracks[trackId].album.name}}</span>
-                    
+                    <div class="albumInfo">
+                      <p class="m-0"><small class="text-muted">{{tracks[trackId].album.album_type.toString().toUpperCase()}}</small></p>
+                      <h5 class="text-spotify m-0">
+                        {{tracks[trackId].album.name}}
+                      </h5>
+                      <p class="mb-1">
+                        <span class="badge badge-spotify">
+                        {{tracks[trackId].album.release_date.substring(0,4)}}
+                        </span> <small>{{tracks[trackId].album.total_tracks}} เพลง</small>
+                      </p>
+
+                      ความนิยม: 
+                      <div class="progress"  style="height: 5px;">
+                        <div class="progress-bar bg-spotify" role="progressbar" v-bind:style="{width:tracks[trackId].album.popularity+'%'}"></div>
+                      </div>
+                      <p v-if="tracks[trackId].album.genres && tracks[trackId].album.genres.length>0"> 
+                        <span class="badge badge-secondary" v-for="genre in tracks[trackId].album.genres">{{genre}}</span>
+                      </p>
+                    </div>
+
 
                   </div>
                 </div>
-                <div class="row">
-                  <div class="col-7 col-lg-4">
+                <div class="row justify-content-center">
+                  <div class="col-9 col-md-6 col-lg-4">
                     <template v-if="tracks[trackId].features">
                       <polar-graph v-bind:data="tracks[trackId].features"></polar-graph>
                     </template>
+                  </div>
+                  <div class="col-12 col-md-6 col-lg-6">
+                    Data
                   </div>
                 </div>
               </template>
