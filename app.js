@@ -316,6 +316,7 @@ const Main = {
               <div class="alert alert-danger" v-if="error">{{error}}</div>
 
               <div class="card" v-show="loading == 0 && trackId==''">
+                  <div class="card-header"><button class="btn btn-sm btn-outline-secondary">เชิงบวก</button> <button class="btn btn-sm btn-outline-secondary">เหมาะกับการเต้น</button></div>
                   <div class="card-body">
                       <h1 class="text-muted" v-show="Object.keys(tracks).length==0">ไม่พบผลลัพธ์สำหรับคำค้นหาดังกล่าว</h1>
                       <router-link :to="'/track/'+id" v-for="(track,id) in tracks">
@@ -331,10 +332,10 @@ const Main = {
                                       </span>ความนิยม:
                                       {{track.popularity}}/100</small>
                                   <template v-if="track.features">
-                                    <span class="badge badge-success" v-if="track.features.Valence >= 0.6">Positive</span>
-                                    <span class="badge badge-primary" v-if="track.features.Danceability >= 0.65">Danceable</span>
-                                    <span class="badge badge-info" v-if="track.features.Acousticness > 0.5">Acoustic</span>
-                                    <span class="badge badge-secondary" v-if="track.features.Instrumentalness > 0.5">Instrumental</span>
+                                    <span class="badge badge-success text-serif" v-if="track.features.Valence >= 0.6">เชิงบวก</span>
+                                    <span class="badge badge-primary text-serif" v-if="track.features.Danceability >= 0.65">เหมาะกับการเต้น</span>
+                                    <span class="badge badge-info text-serif" v-if="track.features.Acousticness > 0.5">อะคูสติก</span>
+                                    <span class="badge badge-secondary text-serif" v-if="track.features.Instrumentalness > 0.5">ดนตรีบรรเลง</span>
                                   </template>
                               </div>
                           </div>
