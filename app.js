@@ -27,11 +27,13 @@ const PolarGraph = {
             label: 'Features',
             data: Object.values(this.data),
             backgroundColor: [
-              'rgb(255, 99, 132)',
-              'rgb(75, 192, 192)',
-              'rgb(255, 205, 86)',
-              'rgb(201, 203, 207)',
-              'rgb(54, 162, 235)',
+              '#9B59B6',
+              '#5499C7',
+              '#48C9B0',
+              '#F4D03F',
+              '#EC7063',
+              '#34495E',
+              '#D7DBDD',
             ],
           },
         ],
@@ -186,6 +188,7 @@ const Main = {
         {},
         resp => {
           if (!resp) {
+            this.$set(this.tracks[trackId], 'analysisFailed', true)
             return false
           }
           this.error = ''
@@ -196,8 +199,10 @@ const Main = {
       )
     },
     getDuration: function(ms) {
-      ms = parseInt(ms / 1000)
-      return parseInt(ms / 60) + ':' + parseInt(ms % 60)
+      let s = parseInt(ms / 1000)
+      let min = parseInt(s / 60)
+      s %= 60
+      return min + ':' + (s < 10 ? '0' + s : s)
     },
     getArtist: function(artists) {
       let a = []
@@ -264,7 +269,7 @@ const Main = {
         spotify.get(
           '/v1/playlists/37i9dQZEVXbMnz8KIWsvf9/tracks',
           {
-            limit: 10,
+            limit: 50,
             fields:
               'items(track(id,name,artists(name),popularity,explicit,href,album(name,id,images)))',
           },
@@ -387,19 +392,34 @@ const Main = {
                       <p>{{tracks[trackId].popularity}}<small>/100</small></p>
                       ความนิยม
                     </div>
+                    <div class="dataField">
+                      <p>{{(tracks[trackId].tempo)?parseInt(tracks[trackId].tempo):"ไม่ทราบ"}}</p>
+                      BPM
+                    </div>
                     <template v-if="tracks[trackId].analysis">
                       <div class="dataField">
                         <p>{{(tracks[trackId].analysis.key==-1)?'ไม่ทราบ':pitchs[tracks[trackId].analysis.key]}}</p>
                         คีย์
                       </div>
                       <div class="dataField">
-                        <p>{{(tracks[trackId].analysis.mode)?'Major':'Minor'}}</p>
+                        <p>{{(tracks[trackId].analysis.mode==-1)?'ไม่ทราบ':((tracks[trackId].analysis.mode)?'Major':'Minor')}}</p>
                         โหมด
                       </div> 
                       <div class="dataField">
                         <p>{{tracks[trackId].analysis.time_signature}}/4</p>
                         เครื่องหมายกำหนดจังหวะ
                       </div>
+                    </template>
+                    <template v-else-if="tracks[trackId].analysisFailed">
+                      <div class="dataField">
+                        <p>Error</p>
+                        โหลดข้อมูลเพิ่มเติมไม่ได้
+                      </div>
+                    </template>
+                    <template v-else>
+                    <div class="dataField">
+                      <p><img src="img/loading.svg" width="32" height="32"></p>
+                      กำลังโหลด...
                     </template>
                   </div>
                 </div>
