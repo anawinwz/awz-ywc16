@@ -271,7 +271,7 @@ const Main = {
           {
             limit: 50,
             fields:
-              'items(track(id,name,artists(name),popularity,explicit,href,album(name,id,images)))',
+              'items(track(id,name,duration_ms,artists(name),popularity,explicit,href,album(name,id,images)))',
           },
           resp => {
             if (!resp) {
@@ -380,8 +380,8 @@ const Main = {
                       <polar-graph v-bind:data="tracks[trackId].features"></polar-graph>
                     </template>
                   </div>
-                  <div class="col-12 col-md-6 col-lg-6">
-                    <div class="dataField">
+                  <div class="col-12 col-md-6 col-lg-5 align-self-center">
+                    <div class="dataField" v-if="tracks[trackId].duration_ms">
                      <p>{{getDuration(tracks[trackId].duration_ms)}}</p>
                      ความยาว
                     </div>
@@ -407,7 +407,7 @@ const Main = {
                       </div> 
                       <div class="dataField">
                         <p>{{tracks[trackId].analysis.time_signature}}/4</p>
-                        เครื่องหมายกำหนดจังหวะ
+                        อัตราจังหวะ
                       </div>
                     </template>
                     <template v-else-if="tracks[trackId].analysisFailed">
