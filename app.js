@@ -417,9 +417,10 @@ const Main = {
                       </div>
                     </template>
                     <template v-else>
-                    <div class="dataField">
-                      <p><img src="img/loading.svg" width="32" height="32"></p>
-                      กำลังโหลด...
+                      <div class="dataField">
+                        <p><img src="img/loading.svg" width="32" height="32"></p>
+                        กำลังโหลด...
+                      </div>
                     </template>
                   </div>
                 </div>
