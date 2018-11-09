@@ -7,6 +7,20 @@ const features = [
   'liveness',
   'speechiness',
 ]
+const pitchs = [
+  'C',
+  'C#/Db',
+  'D',
+  'D#/Eb',
+  'E',
+  'F',
+  'F#/Gb',
+  'G',
+  'G#/Ab',
+  'A',
+  'A#/Bb',
+  'B',
+]
 const PolarGraph = {
   data: function() {
     return {}
@@ -175,7 +189,7 @@ const Main = {
             return false
           }
           this.error = ''
-          this.$set(this.tracks[trackId], 'analysis', resp)
+          this.$set(this.tracks[trackId], 'analysis', resp.track)
           if (typeof $cb == 'function') $cb()
         },
         120000,
@@ -358,7 +372,16 @@ const Main = {
                     </template>
                   </div>
                   <div class="col-12 col-md-6 col-lg-6">
-                    Data
+                    <div class="dataField">
+                      <p>{{tracks[trackId].popularity}}</p>
+                      ความนิยม
+                    </div>
+                    <template v-if="tracks[trackId].analysis">
+                    <div class="dataField">
+                      <p>{{pitchs[tracks[trackId].analysis.key]}}</p>
+                      คีย์
+                    </div>
+                    </template>
                   </div>
                 </div>
               </template>
