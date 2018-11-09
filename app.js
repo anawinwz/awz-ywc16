@@ -119,6 +119,7 @@ const Main = {
       loading: 1,
       isInit: true,
       q: '',
+      error: '',
       trackId: '',
       tracks: {},
     }
@@ -131,7 +132,7 @@ const Main = {
           this.error = 'ไม่สามารถรับข้อมูลของเพลงได้'
           return false
         }
-
+        this.error = ''
         this.tracks = {}
         this.processTracks({ items: [resp] }, () => {
           this.getAlbum(resp.album.id, resp.id, () => {
@@ -150,7 +151,7 @@ const Main = {
           this.error = 'ไม่สามารถรับข้อมูลอัลบั้มได้'
           return false
         }
-
+        this.error = ''
         if (typeof trackId != 'undefined' && trackId.length > 0) {
           for (idx in resp) {
             if (!this.tracks[trackId].album[idx]) {
@@ -163,15 +164,20 @@ const Main = {
     },
     getTrackAnalysis: function(trackId, $cb) {
       this.loading = 1
-      spotify.get('/v1/audio-analysis/' + trackId, {}, resp => {
-        if (!resp) {
-          this.error = 'ไม่สามารถรับข้อมูลการวิเคราะห์บทเพลงได้'
-          return false
-        }
-
-        this.$set(this.tracks[trackId], 'analysis', resp)
-        if (typeof $cb == 'function') $cb()
-      })
+      spotify.get(
+        '/v1/audio-analysis/' + trackId,
+        {},
+        resp => {
+          if (!resp) {
+            this.error = 'ไม่สามารถรับข้อมูลการวิเคราะห์บทเพลงได้'
+            return false
+          }
+          this.error = ''
+          this.$set(this.tracks[trackId], 'analysis', resp)
+          if (typeof $cb == 'function') $cb()
+        },
+        120000,
+      )
     },
     getArtist: function(artists) {
       let a = []
@@ -202,6 +208,7 @@ const Main = {
               this.error = 'ไม่สามารถรับข้อมูลลักษณะเด่นของเพลงได้'
               return false
             }
+            this.error = ''
             resp.audio_features.forEach(item => {
               if (!this.tracks[item.id]) return false
 
@@ -246,7 +253,7 @@ const Main = {
               this.error = 'ไม่สามารถรับข้อมูลเพลย์ลิสต์เพลงยอดนิยมได้'
               return false
             }
-
+            this.error = ''
             this.q = q
             this.processTracks(resp)
           },
@@ -257,6 +264,7 @@ const Main = {
             this.error = 'ไม่สามารถรับข้อมูลการค้นหาได้'
             return false
           }
+          this.error = ''
           this.q = q
           this.processTracks(resp.tracks)
         })
@@ -280,6 +288,7 @@ const Main = {
       <div class="row align-items-center" id="mainRow" v-bind:style="(trackId!='')?{background:'linear-gradient(to bottom, rgb(65, 65, 65) 0%, rgb(24, 24, 24) 100%)'}:{}">
           <div class="col" id="leftPane">
               <center v-show="loading == 1">กำลังโหลด...</center>
+              <div class="alert alert-danger" v-if="error">{{error}}</div>
 
               <div class="card" v-show="loading == 0 && trackId==''">
                   <div class="card-body">

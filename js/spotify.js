@@ -23,8 +23,8 @@ var spotify = {
     })
   },
 
-  ajax: function(method, endpoint, params, $cb) {
-    let ajaxFunc = (method, endpoint, params, $cb) => {
+  ajax: function(method, endpoint, params, $cb, timeout) {
+    let ajaxFunc = (method, endpoint, params, $cb, timeout) => {
       $.ajax({
         type: method,
         url:
@@ -42,16 +42,17 @@ var spotify = {
         beforeSend: function(xhr) {
           xhr.setRequestHeader('Authorization', 'Bearer ' + spotify.token)
         },
+        timeout: timeout ? timeout : 0,
       })
     }
     if (this.token.length == 0 || new Date().getTime() >= this.tokenExp)
-      this.getToken(() => ajaxFunc(method, endpoint, params, $cb))
-    else ajaxFunc(method, endpoint, params, $cb)
+      this.getToken(() => ajaxFunc(method, endpoint, params, $cb, timeout))
+    else ajaxFunc(method, endpoint, params, $cb, timeout)
   },
-  get: function(endpoint, params, $cb) {
-    this.ajax('GET', endpoint, params, $cb)
+  get: function(endpoint, params, $cb, timeout) {
+    this.ajax('GET', endpoint, params, $cb, timeout)
   },
-  post: function(endpoint, params, $cb) {
-    this.ajax('POST', endpoint, params, $cb)
+  post: function(endpoint, params, $cb, timeout) {
+    this.ajax('POST', endpoint, params, $cb, timeout)
   },
 }
