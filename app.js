@@ -7,20 +7,6 @@ const features = [
   'liveness',
   'speechiness',
 ]
-const pitchs = [
-  'C',
-  'C#/Db',
-  'D',
-  'D#/Eb',
-  'E',
-  'F',
-  'F#/Gb',
-  'G',
-  'G#/Ab',
-  'A',
-  'A#/Bb',
-  'B',
-]
 const PolarGraph = {
   data: function() {
     return {}
@@ -139,6 +125,20 @@ const Main = {
       error: '',
       trackId: '',
       tracks: {},
+      pitchs: [
+        'C',
+        'C#/Db',
+        'D',
+        'D#/Eb',
+        'E',
+        'F',
+        'F#/Gb',
+        'G',
+        'G#/Ab',
+        'A',
+        'A#/Bb',
+        'B',
+      ],
     }
   },
   methods: {
@@ -194,6 +194,10 @@ const Main = {
         },
         120000,
       )
+    },
+    getDuration: function(ms) {
+      ms = parseInt(ms / 1000)
+      return parseInt(ms / 60) + ':' + parseInt(ms % 60)
     },
     getArtist: function(artists) {
       let a = []
@@ -373,14 +377,29 @@ const Main = {
                   </div>
                   <div class="col-12 col-md-6 col-lg-6">
                     <div class="dataField">
-                      <p>{{tracks[trackId].popularity}}</p>
+                     <p>{{getDuration(tracks[trackId].duration_ms)}}</p>
+                     ความยาว
+                    </div>
+                    <div class="dataField">
+                      <div class="progress bg-dark" style="height: 5px;">
+                        <div class="progress-bar bg-light" role="progressbar" v-bind:style="{width:tracks[trackId].popularity+'%'}"></div>
+                      </div>
+                      <p>{{tracks[trackId].popularity}}<small>/100</small></p>
                       ความนิยม
                     </div>
                     <template v-if="tracks[trackId].analysis">
-                    <div class="dataField">
-                      <p>{{pitchs[tracks[trackId].analysis.key]}}</p>
-                      คีย์
-                    </div>
+                      <div class="dataField">
+                        <p>{{(tracks[trackId].analysis.key==-1)?'ไม่ทราบ':pitchs[tracks[trackId].analysis.key]}}</p>
+                        คีย์
+                      </div>
+                      <div class="dataField">
+                        <p>{{(tracks[trackId].analysis.mode)?'Major':'Minor'}}</p>
+                        โหมด
+                      </div> 
+                      <div class="dataField">
+                        <p>{{tracks[trackId].analysis.time_signature}}/4</p>
+                        เครื่องหมายกำหนดจังหวะ
+                      </div>
                     </template>
                   </div>
                 </div>
