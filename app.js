@@ -127,6 +127,11 @@ const Main = {
     getTrack: function(trackId, $cb) {
       this.loading = 1
       spotify.get('/v1/tracks/' + trackId, {}, resp => {
+        if (!resp) {
+          this.error = 'ไม่สามารถรับข้อมูลของเพลงได้'
+          return false
+        }
+
         this.tracks = {}
         this.processTracks({ items: [resp] }, () => {
           this.getAlbum(resp.album.id, resp.id, () => {
@@ -141,6 +146,11 @@ const Main = {
     getAlbum: function(albumId, trackId, $cb) {
       this.loading = 1
       spotify.get('/v1/albums/' + albumId, {}, resp => {
+        if (!resp) {
+          this.error = 'ไม่สามารถรับข้อมูลอัลบั้มได้'
+          return false
+        }
+
         if (typeof trackId != 'undefined' && trackId.length > 0) {
           for (idx in resp) {
             if (!this.tracks[trackId].album[idx]) {
@@ -154,6 +164,11 @@ const Main = {
     getTrackAnalysis: function(trackId, $cb) {
       this.loading = 1
       spotify.get('/v1/audio-analysis/' + trackId, {}, resp => {
+        if (!resp) {
+          this.error = 'ไม่สามารถรับข้อมูลการวิเคราะห์บทเพลงได้'
+          return false
+        }
+
         this.$set(this.tracks[trackId], 'analysis', resp)
         if (typeof $cb == 'function') $cb()
       })
@@ -183,6 +198,10 @@ const Main = {
           '/v1/audio-features',
           { ids: Object.keys(this.tracks).join(',') },
           resp => {
+            if (!resp) {
+              this.error = 'ไม่สามารถรับข้อมูลลักษณะเด่นของเพลงได้'
+              return false
+            }
             resp.audio_features.forEach(item => {
               if (!this.tracks[item.id]) return false
 
@@ -223,12 +242,21 @@ const Main = {
               'items(track(id,name,artists(name),popularity,explicit,href,album(name,id,images)))',
           },
           resp => {
+            if (!resp) {
+              this.error = 'ไม่สามารถรับข้อมูลเพลย์ลิสต์เพลงยอดนิยมได้'
+              return false
+            }
+
             this.q = q
             this.processTracks(resp)
           },
         )
       } else {
         spotify.get('/v1/search', { q: q, type: 'track', limit: 10 }, resp => {
+          if (!resp) {
+            this.error = 'ไม่สามารถรับข้อมูลการค้นหาได้'
+            return false
+          }
           this.q = q
           this.processTracks(resp.tracks)
         })

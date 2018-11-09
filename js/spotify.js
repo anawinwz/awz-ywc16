@@ -36,6 +36,9 @@ var spotify = {
         success: function(response) {
           if (typeof $cb != 'undefined') $cb(response)
         },
+        error: function(XMLHttpRequest, textStatus, errorThrown) {
+          if (typeof $cb != 'undefined') $cb()
+        },
         beforeSend: function(xhr) {
           xhr.setRequestHeader('Authorization', 'Bearer ' + spotify.token)
         },
