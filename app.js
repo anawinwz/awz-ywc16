@@ -255,7 +255,7 @@ const Main = {
                     <img class="img-fluid album-img-lg" v-bind:src="(tracks[trackId].album.images.length > 0)?tracks[trackId].album.images[0].url:'img/albumDefault.png'">
                   </div>
                   <div class="col-8 col-md-5 col-lg-4">
-                    <h3>{{tracks[trackId].name}}</h3>
+                    <h3>{{tracks[trackId].name}} <span class="badge badge-secondary" v-show="tracks[trackId].explicit">Explicit</span></h3>
                     <p class="text-light">{{getArtist(tracks[trackId].artists)}}</p>
                     
                     <div class="albumInfo">
