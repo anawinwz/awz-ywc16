@@ -289,7 +289,7 @@ const Main = {
       </div>
       <div class="row align-items-center" id="mainRow" v-bind:style="(trackId!='')?{background:'linear-gradient(to bottom, rgb(65, 65, 65) 0%, rgb(24, 24, 24) 100%)'}:{}">
           <div class="col" id="leftPane">
-              <center v-show="loading == 1">กำลังโหลด...</center>
+              <center v-show="loading == 1 && !error">กำลังโหลด...</center>
               <div class="alert alert-danger" v-if="error">{{error}}</div>
 
               <div class="card" v-show="loading == 0 && trackId==''">
