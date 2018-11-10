@@ -28,9 +28,8 @@ var spotify = {
       $.ajax({
         type: method,
         url:
-          (endpoint.indexOf('api.spotify.com') == -1
-            ? 'https://api.spotify.com'
-            : '') + endpoint,
+          (endpoint.indexOf('/v1') != -1 ? 'https://api.spotify.com' : '') +
+          endpoint,
         data: params,
         dataType: 'json',
         success: function(response) {
