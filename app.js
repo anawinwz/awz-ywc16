@@ -12,7 +12,7 @@ const PolarGraph = {
     return {}
   },
   template: `
-  <div class="chart-container" style="position: relative; width:100%;">
+  <div class="chart-container" style="position: relative; width:100%; height: 240px;">
     <canvas v-bind:id="'chart_'+_uid"></canvas>
   </div>
   `,
@@ -41,6 +41,8 @@ const PolarGraph = {
       },
       type: 'polarArea',
       options: {
+        responsive: true,
+        maintainAspectRatio: false,
         legend: {
           position: 'right',
         },
@@ -141,6 +143,7 @@ const Main = {
         'A#/Bb',
         'B',
       ],
+      filter: 'all',
     }
   },
   methods: {
@@ -211,6 +214,14 @@ const Main = {
       })
       return a.join(', ')
     },
+    classifyTrack: function(feature, data) {
+      if (!data[feature]) return false
+
+      if (feature == 'Valence') return data[feature] >= 0.6 ? true : false
+      else if (feature == 'Danceability')
+        return data[feature] >= 0.65 ? true : false
+      return data[feature] > 0.5 ? true : false
+    },
     processTracks: function(tracks, $cb, isFeature) {
       tracks.items.forEach(item => {
         if (item.track) {
@@ -235,7 +246,7 @@ const Main = {
             }
             this.error = ''
             resp.audio_features.forEach(item => {
-              if (!this.tracks[item.id]) return false
+              if (item == null || !this.tracks[item.id]) return false
 
               this.$set(this.tracks[item.id], 'features', {})
               if (item.tempo)
@@ -249,10 +260,9 @@ const Main = {
                   )
                 }
               }
-
-              if (typeof $cb == 'function') $cb()
-              else this.loading = 0
             })
+            if (typeof $cb == 'function') $cb()
+            else this.loading = 0
           },
         )
       } else {
@@ -280,6 +290,7 @@ const Main = {
             }
             this.error = ''
             this.q = q
+            this.filter = 'all'
             this.processTracks(resp)
           },
         )
@@ -291,6 +302,7 @@ const Main = {
           }
           this.error = ''
           this.q = q
+          this.filter = 'all'
           this.processTracks(resp.tracks)
         })
       }
@@ -305,7 +317,7 @@ const Main = {
           <div class="col">
               <input type="search" v-show="trackId==''" v-bind:value="q" class="form-control" id="songQuery" placeholder="ชื่อเพลง/ศิลปิน Spotify" onchange="router.push('/search/'+this.value)">
               <template v-if="trackId!=''">
-                <a href="javascript:history.go(-1)" class="btn btn-lg btn-outline-light">ย้อนกลับ</a>
+                <a href="javascript:history.go(-1)" class="btn btn-outline-light">ย้อนกลับ</a>
                 <h3 class="d-inline-block ml-2">ข้อมูลเชิงลึกของเพลง</h3>
               </template>
           </div>
@@ -316,10 +328,20 @@ const Main = {
               <div class="alert alert-danger" v-if="error">{{error}}</div>
 
               <div class="card" v-show="loading == 0 && trackId==''">
-                  <div class="card-header"><button class="btn btn-sm btn-outline-secondary">เชิงบวก</button> <button class="btn btn-sm btn-outline-secondary">เหมาะกับการเต้น</button></div>
+                  <div class="card-header">
+                    <button class="btn btn-sm btn-outline-secondary" 
+                    v-bind:class="{ active: filter=='all' }"  v-on:click="filter = 'all'">ทั้งหมด</button>
+                    <button class="btn btn-sm btn-outline-secondary" 
+                    v-bind:class="{ active: filter=='Valence' }" v-on:click="filter = 'Valence'">เชิงบวก</button> 
+                    <button class="btn btn-sm btn-outline-secondary"
+                    v-bind:class="{ active: filter=='Danceability' }" v-on:click="filter = 'Danceability'">เหมาะกับการเต้น</button>
+                    <button class="btn btn-sm btn-outline-secondary"
+                    v-bind:class="{ active: filter=='Acousticness' }" v-on:click="filter = 'Acousticness'">อะคูสติก</button>
+                  </div>
                   <div class="card-body">
                       <h1 class="text-muted" v-show="Object.keys(tracks).length==0">ไม่พบผลลัพธ์สำหรับคำค้นหาดังกล่าว</h1>
-                      <router-link :to="'/track/'+id" v-for="(track,id) in tracks">
+                      <router-link :to="'/track/'+id" v-for="(track,id) in tracks"
+                      v-if="filter=='all' || (filter!='all'&&track.features&&classifyTrack(filter,track.features))">
                           <div class="media song-item">
                               <img class="align-self-center mr-3" v-bind:src="(track.album.images.length > 0)?track.album.images[0].url:'img/albumDefault.png'"
                                   width="64">
@@ -331,12 +353,12 @@ const Main = {
                                   <small><span v-if="track.tempo">{{parseInt(track.tempo)}} BPM |
                                       </span>ความนิยม:
                                       {{track.popularity}}/100</small>
-                                  <template v-if="track.features">
-                                    <span class="badge badge-success text-serif" v-if="track.features.Valence >= 0.6">เชิงบวก</span>
-                                    <span class="badge badge-primary text-serif" v-if="track.features.Danceability >= 0.65">เหมาะกับการเต้น</span>
-                                    <span class="badge badge-info text-serif" v-if="track.features.Acousticness > 0.5">อะคูสติก</span>
-                                    <span class="badge badge-secondary text-serif" v-if="track.features.Instrumentalness > 0.5">ดนตรีบรรเลง</span>
-                                  </template>
+                                  <p class="d-inline-block" v-if="track.features">
+                                    <span class="badge badge-success text-serif" v-if="classifyTrack('Valence',track.features)">เชิงบวก</span>
+                                    <span class="badge badge-primary text-serif" v-if="classifyTrack('Danceability',track.features)">เหมาะกับการเต้น</span>
+                                    <span class="badge badge-info text-serif" v-if="classifyTrack('Acousticness',track.features)">อะคูสติก</span>
+                                    <span class="badge badge-secondary text-serif" v-if="classifyTrack('Instrumentalness',track.features)">ดนตรีบรรเลง</span>
+                                  </p>
                               </div>
                           </div>
                       </router-link>
@@ -344,25 +366,25 @@ const Main = {
               </div>
 
               <template v-if="loading==0 && trackId!=''">
-                <div class="row justify-content-center mb-5">
-                  <div class="col-4 col-md-3 col-lg-2">
+                <div class="row justify-content-center mb-4">
+                  <div class="col-4 col-md-3 col-lg-2 align-self-center">
                     <img class="img-fluid album-img-lg" v-bind:src="(tracks[trackId].album.images.length > 0)?tracks[trackId].album.images[0].url:'img/albumDefault.png'">
                   </div>
                   <div class="col-8 col-md-5 col-lg-4">
-                    <h3>{{tracks[trackId].name}} <span class="badge badge-secondary" v-show="tracks[trackId].explicit">Explicit</span></h3>
+                    <h3 class="text-overflow songName">{{tracks[trackId].name}} <span class="badge badge-secondary" v-show="tracks[trackId].explicit">Explicit</span></h3>
                     <p class="text-light">{{getArtist(tracks[trackId].artists)}}</p>
                     
                     <div class="albumInfo">
                       <p class="m-0"><small class="text-muted">{{tracks[trackId].album.album_type.toString().toUpperCase()}}</small></p>
-                      <h5 class="text-spotify m-0">
+                      <h5 class="text-spotify m-0 d-inline-block">
                         {{tracks[trackId].album.name}}
                       </h5>
-                      <p class="mb-1">
+                      <p class="mb-1 d-inline-block">
                         <span class="badge badge-spotify">
                         {{tracks[trackId].album.release_date.substring(0,4)}}
                         </span> <small>{{tracks[trackId].album.total_tracks}} เพลง</small>
                       </p>
-
+                      <br>
                       ความนิยม: 
                       <div class="progress"  style="height: 5px;">
                         <div class="progress-bar bg-spotify" role="progressbar" v-bind:style="{width:tracks[trackId].album.popularity+'%'}"></div>
@@ -373,6 +395,13 @@ const Main = {
                     </div>
 
 
+                  </div>
+                </div>
+                <div class="row d-none d-lg-block">
+                  <div class="col-6" style="margin:0 auto;">
+                    <iframe v-bind:src="'https://open.spotify.com/embed/track/'+trackId" 
+                    width="100%" height="80" frameborder="0" allowtransparency="true" 
+                    allow="encrypted-media"></iframe>
                   </div>
                 </div>
                 <div class="row justify-content-center">
