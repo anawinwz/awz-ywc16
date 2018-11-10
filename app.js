@@ -353,7 +353,7 @@ const Main = {
                                   <small><span v-if="track.tempo">{{parseInt(track.tempo)}} BPM |
                                       </span>ความนิยม:
                                       {{track.popularity}}/100</small>
-                                  <p class="d-inline-block" v-if="track.features">
+                                  <p class="d-inline-block m-0" v-if="track.features">
                                     <span class="badge badge-success text-serif" v-if="classifyTrack('Valence',track.features)">เชิงบวก</span>
                                     <span class="badge badge-primary text-serif" v-if="classifyTrack('Danceability',track.features)">เหมาะกับการเต้น</span>
                                     <span class="badge badge-info text-serif" v-if="classifyTrack('Acousticness',track.features)">อะคูสติก</span>
