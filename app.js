@@ -372,11 +372,11 @@ const Main = {
                   </div>
                   <div class="col-8 col-md-5 col-lg-4">
                     <h3 class="text-overflow songName">{{tracks[trackId].name}} <span class="badge badge-secondary" v-show="tracks[trackId].explicit">Explicit</span></h3>
-                    <p class="text-light">{{getArtist(tracks[trackId].artists)}}</p>
+                    <p class="text-light artistName">{{getArtist(tracks[trackId].artists)}}</p>
                     
                     <div class="albumInfo">
                       <p class="m-0"><small class="text-muted">{{tracks[trackId].album.album_type.toString().toUpperCase()}}</small></p>
-                      <h5 class="text-spotify m-0 d-inline-block">
+                      <h5 class="text-overflow text-spotify m-0 d-inline-block" style="max-width:100%;margin-bottom: -5px !important;">
                         {{tracks[trackId].album.name}}
                       </h5>
                       <p class="mb-1 d-inline-block">
@@ -385,7 +385,7 @@ const Main = {
                         </span> <small>{{tracks[trackId].album.total_tracks}} เพลง</small>
                       </p>
                       <br>
-                      ความนิยม: 
+                      <small class="text-light">ความนิยม:</small> 
                       <div class="progress"  style="height: 5px;">
                         <div class="progress-bar bg-spotify" role="progressbar" v-bind:style="{width:tracks[trackId].album.popularity+'%'}"></div>
                       </div>
