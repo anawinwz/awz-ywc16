@@ -187,7 +187,7 @@ const Main = {
     },
     getTrackAnalysis: function(trackId, $cb) {
       spotify.get(
-        '/v1/audio-analysis/' + trackId,
+        'audioAnalysis.php?trackId=' + trackId,
         {},
         resp => {
           if (!resp) {
