@@ -1,3 +1,9 @@
+# Spotify Insights
+My Homework Project for the Final Round audtion of YWC16 (Web Programmer track).  
+
+It fetchs tracks from Spotify and give you an option to filter them based on their Features (`valence`, `danceablility`, `acousticness` and `instrumentalness`).  
+From those tracks, you can select one to view its insights (a polar graph representing its Features and interesting numbers/values) or to just listen the track right from the Insights page. 
+
 ## Installation Steps
 1. Clone these files on a web server which runs PHP and has cURL enabled.
 2. `yarn` to install Dev dependencies.
