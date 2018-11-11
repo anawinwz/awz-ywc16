@@ -66,20 +66,11 @@ const Main = {
           if (!vm.tracks[to.params.id].album.genres) {
             vm.loading = 1
             vm.getAlbum(vm.tracks[to.params.id].album.id, to.params.id, () => {
-              /*if (!vm.tracks[to.params.id].analysis) {
-                vm.getTrackAnalysis(to.params.id, () => {
-                  vm.loading = 0
-                })
-              } else {*/
               vm.loading = 0
-              //}
             })
-          } //else
+          }
           if (!vm.tracks[to.params.id].analysis) {
-            //vm.loading = 1
-            vm.getTrackAnalysis(to.params.id, () => {
-              //vm.loading = 0
-            })
+            vm.getTrackAnalysis(to.params.id)
           }
         }
       }
@@ -100,22 +91,12 @@ const Main = {
             this.tracks[to.params.id].album.id,
             to.params.id,
             () => {
-              /*
-              if (!this.tracks[to.params.id].analysis) {
-                this.getTrackAnalysis(to.params.id, () => {
-                  this.loading = 0
-                })
-              } else {*/
               this.loading = 0
-              //}
             },
           )
-        } //else
+        }
         if (!this.tracks[to.params.id].analysis) {
-          //this.loading = 1
-          this.getTrackAnalysis(to.params.id, () => {
-            //this.loading = 0
-          })
+          this.getTrackAnalysis(to.params.id)
         }
       }
     },
@@ -159,12 +140,9 @@ const Main = {
         this.processTracks({ items: [resp] }, () => {
           this.getAlbum(resp.album.id, resp.id, () => {
             this.loading = 0
-            this.getTrackAnalysis(resp.id, () => {
-              //this.loading = 0
-            })
+            this.getTrackAnalysis(resp.id)
           })
         })
-        //this.loading = 0
       })
     },
     getAlbum: function(albumId, trackId, $cb) {
@@ -470,8 +448,6 @@ const routes = [
 
 const router = new VueRouter({
   routes: routes,
-  //base: '/awz-ywc16',
-  //  mode: 'history'
 })
 
 const app = new Vue({
