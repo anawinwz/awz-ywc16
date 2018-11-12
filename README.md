@@ -1,4 +1,4 @@
-# Spotify Insights
+# inSpotify - Spotify Track Insights
 My Homework Project for the YWC16 Final Round interview (Web Programmer major).  
 
 It fetchs tracks from Spotify and give you an option to filter them based on their Features (`valence`, `danceablility`, `acousticness` and `instrumentalness`).  
