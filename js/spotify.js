@@ -5,7 +5,7 @@ var spotify = {
   getToken: function($cb) {
     $.ajax({
       type: "POST",
-      url: "spotifyToken.php",
+      url: "/spotifyToken.php",
       data: {
         passkey: "LOCALSPOTIFYAPI"
       },

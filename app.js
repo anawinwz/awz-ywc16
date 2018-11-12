@@ -1,293 +1,297 @@
 const features = [
-  'acousticness',
-  'valence',
-  'danceability',
-  'energy',
-  'instrumentalness',
-  'liveness',
-  'speechiness',
-]
+  "acousticness",
+  "valence",
+  "danceability",
+  "energy",
+  "instrumentalness",
+  "liveness",
+  "speechiness"
+];
 const PolarGraph = {
   data: function() {
-    return {}
+    return {};
   },
   template: `
   <div class="chart-container" style="position: relative; width:100%; height: 240px;">
     <canvas v-bind:id="'chart_'+_uid"></canvas>
   </div>
   `,
-  props: ['data'],
+  props: ["data"],
   mounted() {
-    console.log(this._uid)
+    console.log(this._uid);
 
-    new Chart($('#chart_' + this._uid), {
+    new Chart($("#chart_" + this._uid), {
       data: {
         datasets: [
           {
-            label: 'Features',
+            label: "Features",
             data: Object.values(this.data),
             backgroundColor: [
-              '#9B59B6',
-              '#5499C7',
-              '#48C9B0',
-              '#F4D03F',
-              '#EC7063',
-              '#34495E',
-              '#D7DBDD',
-            ],
-          },
+              "#9B59B6",
+              "#5499C7",
+              "#48C9B0",
+              "#F4D03F",
+              "#EC7063",
+              "#34495E",
+              "#D7DBDD"
+            ]
+          }
         ],
-        labels: Object.keys(this.data),
+        labels: Object.keys(this.data)
       },
-      type: 'polarArea',
+      type: "polarArea",
       options: {
         responsive: true,
         maintainAspectRatio: false,
         legend: {
-          position: 'right',
+          position: "right"
         },
         scale: {
-          display: false,
-        },
-      },
-    })
-  },
-}
+          display: false
+        }
+      }
+    });
+  }
+};
 const Main = {
   beforeRouteEnter(to, from, next) {
     next(vm => {
-      vm.q = to.params.q ? to.params.q : ''
-      if (!to.params.id || to.params.id == '') vm.search(vm.q)
+      vm.q = to.params.q ? to.params.q : "";
+      if (!to.params.id || to.params.id == "") vm.search(vm.q);
       else if (vm.trackId != to.params.id) {
-        vm.trackId = to.params.id
+        vm.trackId = to.params.id;
         if (!vm.tracks[to.params.id]) {
-          vm.getTrack(vm.trackId)
+          vm.getTrack(vm.trackId);
         } else {
           if (!vm.tracks[to.params.id].album.genres) {
-            vm.loading = 1
+            vm.loading = 1;
             vm.getAlbum(vm.tracks[to.params.id].album.id, to.params.id, () => {
-              vm.loading = 0
-            })
+              vm.loading = 0;
+            });
           }
           if (!vm.tracks[to.params.id].analysis) {
-            vm.getTrackAnalysis(to.params.id)
+            vm.getTrackAnalysis(to.params.id);
           }
         }
       }
-    })
+    });
   },
   watch: {
     $route(to, from) {
-      this.trackId = to.params.id ? to.params.id : ''
-      if (this.trackId == '') {
-        if ((!to.params.q && this.q != '') || to.params.q != this.q) {
+      this.trackId = to.params.id ? to.params.id : "";
+      if (this.trackId == "") {
+        if ((!to.params.q && this.q != "") || to.params.q != this.q) {
           if (!to.params.q || !from.params.q || to.params.q != from.params.q)
-            this.search(to.params.q ? to.params.q : '')
+            this.search(to.params.q ? to.params.q : "");
         }
       } else {
         if (!this.tracks[to.params.id].album.genres) {
-          this.loading = 1
+          this.loading = 1;
           this.getAlbum(
             this.tracks[to.params.id].album.id,
             to.params.id,
             () => {
-              this.loading = 0
-            },
-          )
+              this.loading = 0;
+            }
+          );
         }
         if (!this.tracks[to.params.id].analysis) {
-          this.getTrackAnalysis(to.params.id)
+          this.getTrackAnalysis(to.params.id);
         }
       }
-    },
+    }
   },
 
   data: function() {
     return {
       loading: 1,
       isInit: true,
-      q: '',
-      error: '',
-      trackId: '',
+      q: "",
+      error: "",
+      trackId: "",
       tracks: {},
       pitchs: [
-        'C',
-        'C#/Db',
-        'D',
-        'D#/Eb',
-        'E',
-        'F',
-        'F#/Gb',
-        'G',
-        'G#/Ab',
-        'A',
-        'A#/Bb',
-        'B',
+        "C",
+        "C#/Db",
+        "D",
+        "D#/Eb",
+        "E",
+        "F",
+        "F#/Gb",
+        "G",
+        "G#/Ab",
+        "A",
+        "A#/Bb",
+        "B"
       ],
-      filter: 'all',
-    }
+      filter: "all"
+    };
   },
   methods: {
     getTrack: function(trackId, $cb) {
-      this.loading = 1
-      spotify.get('/v1/tracks/' + trackId, {}, resp => {
+      this.loading = 1;
+      spotify.get("/v1/tracks/" + trackId, {}, resp => {
         if (!resp) {
-          this.error = 'ไม่สามารถรับข้อมูลของเพลงได้'
-          return false
+          this.error = "ไม่สามารถรับข้อมูลของเพลงได้";
+          return false;
         }
-        this.error = ''
-        this.tracks = {}
+        this.error = "";
+        this.tracks = {};
         this.processTracks({ items: [resp] }, () => {
           this.getAlbum(resp.album.id, resp.id, () => {
-            this.loading = 0
-            this.getTrackAnalysis(resp.id)
-          })
-        })
-      })
+            this.loading = 0;
+            this.getTrackAnalysis(resp.id);
+          });
+        });
+      });
     },
     getAlbum: function(albumId, trackId, $cb) {
-      this.loading = 1
-      spotify.get('/v1/albums/' + albumId, {}, resp => {
+      this.loading = 1;
+      spotify.get("/v1/albums/" + albumId, {}, resp => {
         if (!resp) {
-          this.error = 'ไม่สามารถรับข้อมูลอัลบั้มได้'
-          return false
+          this.error = "ไม่สามารถรับข้อมูลอัลบั้มได้";
+          return false;
         }
-        this.error = ''
-        if (typeof trackId != 'undefined' && trackId.length > 0) {
+        this.error = "";
+        if (typeof trackId != "undefined" && trackId.length > 0) {
           for (idx in resp) {
             if (!this.tracks[trackId].album[idx]) {
-              this.$set(this.tracks[trackId].album, idx, resp[idx])
+              this.$set(this.tracks[trackId].album, idx, resp[idx]);
             }
           }
         }
-        if (typeof $cb == 'function') $cb()
-      })
+        if (typeof $cb == "function") $cb();
+      });
     },
     getTrackAnalysis: function(trackId, $cb) {
       spotify.get(
-        'audioAnalysis.php?trackId=' + trackId,
+        "audioAnalysis.php?trackId=" + trackId,
         {},
         resp => {
           if (!resp) {
-            this.$set(this.tracks[trackId], 'analysisFailed', true)
-            return false
+            this.$set(this.tracks[trackId], "analysisFailed", true);
+            return false;
           }
-          this.error = ''
-          this.$set(this.tracks[trackId], 'analysis', resp.track)
-          if (typeof $cb == 'function') $cb()
+          this.error = "";
+          this.$set(this.tracks[trackId], "analysis", resp.track);
+          if (typeof $cb == "function") $cb();
         },
-        120000,
-      )
+        120000
+      );
     },
     getDuration: function(ms) {
-      let s = parseInt(ms / 1000)
-      let min = parseInt(s / 60)
-      s %= 60
-      return min + ':' + (s < 10 ? '0' + s : s)
+      let s = parseInt(ms / 1000);
+      let min = parseInt(s / 60);
+      s %= 60;
+      return min + ":" + (s < 10 ? "0" + s : s);
     },
     getArtist: function(artists) {
-      let a = []
+      let a = [];
       artists.forEach(artist => {
-        a.push(artist.name)
-      })
-      return a.join(', ')
+        a.push(artist.name);
+      });
+      return a.join(", ");
     },
     classifyTrack: function(feature, data) {
-      if (!data[feature]) return false
+      if (!data[feature]) return false;
 
-      if (feature == 'Valence') return data[feature] >= 0.6 ? true : false
-      else if (feature == 'Danceability')
-        return data[feature] >= 0.65 ? true : false
-      return data[feature] > 0.5 ? true : false
+      if (feature == "Valence") return data[feature] >= 0.6 ? true : false;
+      else if (feature == "Danceability")
+        return data[feature] >= 0.65 ? true : false;
+      return data[feature] > 0.5 ? true : false;
     },
     processTracks: function(tracks, $cb, isFeature) {
       tracks.items.forEach(item => {
         if (item.track) {
-          this.$set(this.tracks, item.track.id, item.track)
+          this.$set(this.tracks, item.track.id, item.track);
           if (item.track.albums)
-            this.$set(this.tracks[item.track.id], 'album', item.track.albums[0])
+            this.$set(
+              this.tracks[item.track.id],
+              "album",
+              item.track.albums[0]
+            );
         } else {
-          this.$set(this.tracks, item.id, item)
+          this.$set(this.tracks, item.id, item);
           if (item.albums)
-            this.$set(this.tracks[item.id], 'album', item.albums[0])
+            this.$set(this.tracks[item.id], "album", item.albums[0]);
         }
-      })
+      });
 
-      if (typeof isFeature == 'undefined' || isFeature) {
+      if (typeof isFeature == "undefined" || isFeature) {
         spotify.get(
-          '/v1/audio-features',
-          { ids: Object.keys(this.tracks).join(',') },
+          "/v1/audio-features",
+          { ids: Object.keys(this.tracks).join(",") },
           resp => {
             if (!resp) {
-              this.error = 'ไม่สามารถรับข้อมูลลักษณะเด่นของเพลงได้'
-              return false
+              this.error = "ไม่สามารถรับข้อมูลลักษณะเด่นของเพลงได้";
+              return false;
             }
-            this.error = ''
+            this.error = "";
             resp.audio_features.forEach(item => {
-              if (item == null || !this.tracks[item.id]) return false
+              if (item == null || !this.tracks[item.id]) return false;
 
-              this.$set(this.tracks[item.id], 'features', {})
+              this.$set(this.tracks[item.id], "features", {});
               if (item.tempo)
-                this.$set(this.tracks[item.id], 'tempo', item.tempo)
+                this.$set(this.tracks[item.id], "tempo", item.tempo);
               for (idx in item) {
                 if (features.indexOf(idx) != -1) {
                   this.$set(
-                    this.tracks[item.id]['features'],
+                    this.tracks[item.id]["features"],
                     idx[0].toUpperCase() + idx.slice(1),
-                    item[idx],
-                  )
+                    item[idx]
+                  );
                 }
               }
-            })
-            if (typeof $cb == 'function') $cb()
-            else this.loading = 0
-          },
-        )
+            });
+            if (typeof $cb == "function") $cb();
+            else this.loading = 0;
+          }
+        );
       } else {
-        if (typeof $cb == 'function') $cb()
-        else this.loading = 0
+        if (typeof $cb == "function") $cb();
+        else this.loading = 0;
       }
     },
     search: function(q) {
-      if (q == this.q && !this.isInit) return
-      this.isInit = false
-      this.loading = 1
-      this.tracks = {}
+      if (q == this.q && !this.isInit) return;
+      this.isInit = false;
+      this.loading = 1;
+      this.tracks = {};
       if (!q || q.length == 0) {
         spotify.get(
-          '/v1/playlists/37i9dQZEVXbMnz8KIWsvf9/tracks',
+          "/v1/playlists/37i9dQZEVXbMnz8KIWsvf9/tracks",
           {
             limit: 50,
             fields:
-              'items(track(id,name,duration_ms,artists(name),popularity,explicit,href,album(name,id,images)))',
+              "items(track(id,name,duration_ms,artists(name),popularity,explicit,href,album(name,id,images)))"
           },
           resp => {
             if (!resp) {
-              this.error = 'ไม่สามารถรับข้อมูลเพลย์ลิสต์เพลงยอดนิยมได้'
-              return false
+              this.error = "ไม่สามารถรับข้อมูลเพลย์ลิสต์เพลงยอดนิยมได้";
+              return false;
             }
-            this.error = ''
-            this.q = q
-            this.filter = 'all'
-            this.processTracks(resp)
-          },
-        )
-      } else {
-        spotify.get('/v1/search', { q: q, type: 'track', limit: 10 }, resp => {
-          if (!resp) {
-            this.error = 'ไม่สามารถรับข้อมูลการค้นหาได้'
-            return false
+            this.error = "";
+            this.q = q;
+            this.filter = "all";
+            this.processTracks(resp);
           }
-          this.error = ''
-          this.q = q
-          this.filter = 'all'
-          this.processTracks(resp.tracks)
-        })
+        );
+      } else {
+        spotify.get("/v1/search", { q: q, type: "track", limit: 10 }, resp => {
+          if (!resp) {
+            this.error = "ไม่สามารถรับข้อมูลการค้นหาได้";
+            return false;
+          }
+          this.error = "";
+          this.q = q;
+          this.filter = "all";
+          this.processTracks(resp.tracks);
+        });
       }
-    },
+    }
   },
   components: {
-    'polar-graph': PolarGraph,
+    "polar-graph": PolarGraph
   },
   template: `
     <div>
@@ -436,20 +440,21 @@ const Main = {
           </div>
       </div>
     </div>
-    `,
-}
+    `
+};
 
 const routes = [
-  { path: '/', component: Main },
-  { path: '/search/:q', component: Main },
-  { path: '/track/:id', component: Main },
-  { path: '*', redirect: '/' },
-]
+  { path: "/", component: Main },
+  { path: "/search/:q", component: Main },
+  { path: "/track/:id", component: Main },
+  { path: "*", redirect: "/" }
+];
 
 const router = new VueRouter({
   routes: routes,
-})
+  mode: "history"
+});
 
 const app = new Vue({
-  router,
-}).$mount('#app')
+  router
+}).$mount("#app");
