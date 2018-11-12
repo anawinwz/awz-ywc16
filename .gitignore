@@ -26,3 +26,5 @@ package-lock.json
 
 spotifyToken.php
 /cachedAnalysis/*.json
+package.json
+.prettierrc
