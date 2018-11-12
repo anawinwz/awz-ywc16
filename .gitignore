@@ -25,4 +25,4 @@ yarn.lock
 package-lock.json
 
 spotifyToken.php
-/cachedAnalysis
+/cachedAnalysis/*.json
