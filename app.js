@@ -325,7 +325,7 @@ const Main = {
                       <router-link :to="'/track/'+id" v-for="(track,id) in tracks"
                       v-if="filter=='all' || (filter!='all'&&track.features&&classifyTrack(filter,track.features))">
                           <div class="media song-item">
-                              <img class="align-self-center mr-3" v-bind:src="(track.album.images.length > 0)?track.album.images[0].url:'img/albumDefault.png'"
+                              <img class="align-self-center mr-3" v-bind:src="(track.album.images.length > 0)?track.album.images[0].url:'/img/albumDefault.png'"
                                   width="64">
 
                               <div class="align-self-center media-body">
@@ -350,7 +350,7 @@ const Main = {
               <template v-if="loading==0 && trackId!=''">
                 <div class="row justify-content-center mb-4">
                   <div class="col-4 col-md-3 col-lg-2 align-self-center">
-                    <img class="img-fluid album-img-lg" v-bind:src="(tracks[trackId].album.images.length > 0)?tracks[trackId].album.images[0].url:'img/albumDefault.png'">
+                    <img class="img-fluid album-img-lg" v-bind:src="(tracks[trackId].album.images.length > 0)?tracks[trackId].album.images[0].url:'/img/albumDefault.png'">
                   </div>
                   <div class="col-8 col-md-5 col-lg-4">
                     <h3 class="text-overflow songName">{{tracks[trackId].name}} <span class="badge badge-secondary" v-show="tracks[trackId].explicit">Explicit</span></h3>
@@ -430,7 +430,7 @@ const Main = {
                     </template>
                     <template v-else>
                       <div class="dataField">
-                        <p><img src="img/loading.svg" width="32" height="32"></p>
+                        <p><img src="/img/loading.svg" width="32" height="32"></p>
                         กำลังโหลด...
                       </div>
                     </template>
